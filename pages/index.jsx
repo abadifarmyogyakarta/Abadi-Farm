@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabaseClient";
+import { staticLiveGoats } from "@/lib/staticGoats";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import GoatCard from "@/components/ui/GoatCard";
@@ -46,10 +47,15 @@ export default function Home() {
       ]);
       if (goatsRes.error) throw goatsRes.error;
       if (packagesRes.error) throw packagesRes.error;
-      setLiveGoats(goatsRes.data || []);
-      setCookedPackages(packagesRes.data || []);
+      const goatsData = goatsRes.data || [];
+      const packagesData = packagesRes.data || [];
+      // Use static data as fallback if Supabase returns empty
+      setLiveGoats(goatsData.length > 0 ? goatsData : staticLiveGoats);
+      setCookedPackages(packagesData);
     } catch (err) {
-      setError("Gagal memuat data. Silakan coba lagi.");
+      // Fallback to static data when Supabase is unavailable
+      setLiveGoats(staticLiveGoats);
+      setCookedPackages([]);
     } finally {
       setLoading(false);
     }
